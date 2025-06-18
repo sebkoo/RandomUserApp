@@ -13,9 +13,13 @@ import { User } from '../types/User';
 import { fetchUsers } from '../api/fetchUsers';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import { loadUsers, saveUsers } from '../utilities/storage';
+import {
+  loadUsers,
+  saveUsers,
+  loadFavorites,
+  saveFavorites,
+} from '../utilities/storage';
 import { AntDesign } from '@expo/vector-icons';
-import { saveFavorites, loadFavorites } from '../utilities/storage';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'UserList'>;
 
@@ -25,6 +29,7 @@ export const UserListScreen = ({ navigation }: Props) => {
   const [favoriteEmails, setFavoriteEmails] = useState<string[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -52,6 +57,20 @@ export const UserListScreen = ({ navigation }: Props) => {
 
     loadData();
   }, []);
+
+  const onReresh = async () => {
+    try {
+      setRefreshing(true);
+      const fresh = await fetchUsers();
+      setUsers(fresh);
+      setFiltered(fresh);
+      await saveUsers(fresh);
+    } catch (e) {
+      console.warn('Refresh failed');
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     const query = search.toLowerCase();
