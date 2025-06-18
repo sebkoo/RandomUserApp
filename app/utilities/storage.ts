@@ -21,3 +21,23 @@ export const loadUsers = async (): Promise<User[] | null> => {
     return null;
   }
 };
+
+const FAVORITES_KEY = 'favorite_emails';
+
+export const saveFavorites = async (emails: string[]): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(emails));
+  } catch (e) {
+    console.error('Failed to save favorites:', e);
+  }
+};
+
+export const loadFavorites = async (): Promise<string[]> => {
+  try {
+    const json = await AsyncStorage.getItem(FAVORITES_KEY);
+    return json ? JSON.parse(json) : [];
+  } catch (e) {
+    console.error('Failed to load favorites:', e);
+    return [];
+  }
+};

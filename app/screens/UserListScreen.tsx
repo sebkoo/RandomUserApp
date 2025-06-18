@@ -14,17 +14,23 @@ import { fetchUsers } from '../api/fetchUsers';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { loadUsers, saveUsers } from '../utilities/storage';
+import { AntDesign } from '@expo/vector-icons';
+import { saveFavorites, loadFavorites } from '../utilities/storage';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'UserList'>;
 
 export const UserListScreen = ({ navigation }: Props) => {
   const [users, setUsers] = useState<User[]>([]);
   const [filtered, setFiltered] = useState<User[]>([]);
+  const [favoriteEmails, setFavoriteEmails] = useState<string[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
+      const favorites = await loadFavorites();
+      setFavoriteEmails(favorites);
+
       const cached = await loadUsers();
       if (cached && cached.length > 0) {
         setUsers(cached);
@@ -37,8 +43,8 @@ export const UserListScreen = ({ navigation }: Props) => {
         setUsers(fresh);
         setFiltered(fresh);
         saveUsers(fresh); // Update cache
-      } catch (err) {
-        console.warn('Failed to fetch users.  Use cached data if available.');
+      } catch (e) {
+        console.warn('Use cached data due to fetch error.');
       } finally {
         setLoading(false);
       }
@@ -54,6 +60,17 @@ export const UserListScreen = ({ navigation }: Props) => {
     );
     setFiltered(filteredData);
   }, [search, users]);
+
+  const toggleFavorite = async (email: string) => {
+    const updated = favoriteEmails.includes(email)
+      ? favoriteEmails.filter((e) => e !== email)
+      : [...favoriteEmails, email];
+
+    setFavoriteEmails(updated);
+    await saveFavorites(updated);
+  };
+
+  const isFavorite = (email: string) => favoriteEmails.includes(email);
 
   if (loading) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
 
@@ -80,9 +97,19 @@ export const UserListScreen = ({ navigation }: Props) => {
                 source={{ uri: item.picture.medium }}
                 style={styles.avatar}
               />
-              <Text>
-                {item.name.first} {item.name.last}
-              </Text>
+              <View style={styles.userInfo}>
+                <Text>
+                  {item.name.first} {item.name.last}
+                </Text>
+                <Text style={styles.email}>{item.email}</Text>
+              </View>
+              <TouchableOpacity onPress={() => toggleFavorite(item.email)}>
+                <AntDesign
+                  name={isFavorite(item.email) ? 'heart' : 'hearto'}
+                  size={24}
+                  color={isFavorite(item.email) ? 'red' : 'gray'}
+                />
+              </TouchableOpacity>
             </View>
           </TouchableOpacity>
         )}
@@ -104,9 +131,11 @@ const styles = StyleSheet.create({
   userCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
-  avatar: { width: 50, height: 50, borderRadius: 25, marginRight: 16 },
+  avatar: { width: 50, height: 50, borderRadius: 25, marginRight: 12 },
+  userInfo: { flex: 1 },
+  email: { fontSize: 12, color: `#555` },
 });
