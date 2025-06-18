@@ -13,6 +13,7 @@ import { User } from '../types/User';
 import { fetchUsers } from '../api/fetchUsers';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import { loadUsers, saveUsers } from '../utilities/storage';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'UserList'>;
 
@@ -23,11 +24,27 @@ export const UserListScreen = ({ navigation }: Props) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchUsers().then((data) => {
-      setUsers(data);
-      setFiltered(data);
-      setLoading(false);
-    });
+    const loadData = async () => {
+      const cached = await loadUsers();
+      if (cached && cached.length > 0) {
+        setUsers(cached);
+        setFiltered(cached);
+        setLoading(false);
+      }
+
+      try {
+        const fresh = await fetchUsers();
+        setUsers(fresh);
+        setFiltered(fresh);
+        saveUsers(fresh); // Update cache
+      } catch (err) {
+        console.warn('Failed to fetch users.  Use cached data if available.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
   }, []);
 
   useEffect(() => {
