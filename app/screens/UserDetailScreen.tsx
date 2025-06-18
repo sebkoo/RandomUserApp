@@ -8,20 +8,39 @@ type Props = NativeStackScreenProps<RootStackParamList, 'UserDetail'>;
 export const UserDetailScreen = ({ route }: Props) => {
   const { user } = route.params;
 
+  const dobFormatted = new Date(user.dob.date).toLocaleDateString();
+
   return (
     <View style={styles.container}>
       <Image source={{ uri: user.picture.medium }} style={styles.avatar} />
       <Text style={styles.name}>
-        {user.name.first} {user.name.last}
+        {user.name.title} {user.name.first} {user.name.last}
       </Text>
-      <Text style={styles.label}>Email: {user.email}</Text>
+      <Text style={styles.detail}>
+        📍 {user.location.city}, {user.location.country}
+      </Text>
+      <Text style={styles.detail}>📞 {user.phone}</Text>
+      <Text style={styles.detail}>
+        🎂 {dobFormatted} (Age: {user.dob.age})
+      </Text>
+      <Text style={styles.detail}>✉️ {user.email}</Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', paddingTop: 100 },
-  avatar: { width: 100, height: 100, borderRadius: 50, marginBottom: 20 },
-  name: { fontSize: 24, fontWeight: 'bold', marginBottom: 10 },
-  label: { fontSize: 18, color: '#555' },
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    paddingTop: 100,
+    paddingHorizontal: 20,
+  },
+  avatar: { width: 120, height: 120, borderRadius: 60, marginBottom: 20 },
+  name: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  detail: { fontSize: 18, marginVertical: 4, textAlign: 'center' },
 });
