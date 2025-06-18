@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   TouchableOpacity,
+  TextInput,
 } from 'react-native';
 import { User } from '../types/User';
 import { fetchUsers } from '../api/fetchUsers';
@@ -17,22 +18,41 @@ type Props = NativeStackScreenProps<RootStackParamList, 'UserList'>;
 
 export const UserListScreen = ({ navigation }: Props) => {
   const [users, setUsers] = useState<User[]>([]);
+  const [filtered, setFiltered] = useState<User[]>([]);
+  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchUsers().then((data) => {
       setUsers(data);
+      setFiltered(data);
       setLoading(false);
     });
   }, []);
+
+  useEffect(() => {
+    const query = search.toLowerCase();
+    const filteredData = users.filter((user) =>
+      `${user.name.first} ${user.name.last}`.toLowerCase().includes(query)
+    );
+    setFiltered(filteredData);
+  }, [search, users]);
 
   if (loading) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Random Users</Text>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Search by name..."
+        value={search}
+        onChangeText={setSearch}
+      />
+
       <FlatList
-        data={users}
+        data={filtered}
         keyExtractor={(item) => item.email}
         renderItem={({ item }) => (
           <TouchableOpacity
@@ -56,7 +76,14 @@ export const UserListScreen = ({ navigation }: Props) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 16 },
+  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 10 },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 16,
+  },
   userCard: {
     flexDirection: 'row',
     alignItems: 'center',
