@@ -6,11 +6,16 @@ import {
   Image,
   StyleSheet,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
 import { User } from '../types/User';
 import { fetchUsers } from '../api/fetchUsers';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigation/AppNavigator';
 
-export const UserListScreen = () => {
+type Props = NativeStackScreenProps<RootStackParamList, 'UserList'>;
+
+export const UserListScreen = ({ navigation }: Props) => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -30,15 +35,19 @@ export const UserListScreen = () => {
         data={users}
         keyExtractor={(item) => item.email}
         renderItem={({ item }) => (
-          <View style={styles.userCard}>
-            <Image
-              source={{ uri: item.picture.medium }}
-              style={styles.avatar}
-            />
-            <Text>
-              {item.name.first} {item.name.last}
-            </Text>
-          </View>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('UserDetail', { user: item })}
+          >
+            <View style={styles.userCard}>
+              <Image
+                source={{ uri: item.picture.medium }}
+                style={styles.avatar}
+              />
+              <Text>
+                {item.name.first} {item.name.last}
+              </Text>
+            </View>
+          </TouchableOpacity>
         )}
       />
     </View>
@@ -46,7 +55,7 @@ export const UserListScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, marginTop: 50, padding: 16 },
+  container: { flex: 1, padding: 16 },
   title: { fontSize: 24, fontWeight: 'bold', marginBottom: 16 },
   userCard: {
     flexDirection: 'row',

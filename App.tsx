@@ -1,7 +1,6 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-import { UserListScreen } from './app/screens/UserListScreen';
+import React from 'react';
+import { AppNavigator } from './app/navigation/AppNavigator';
 
 export default function App() {
-  return <UserListScreen />;
+  return <AppNavigator />;
 }
