@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet, Button, Share } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import { RootStackParamList } from '../navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'UserDetail'>;
 
@@ -10,9 +10,19 @@ export const UserDetailScreen = ({ route }: Props) => {
 
   const dobFormatted = new Date(user.dob.date).toLocaleDateString();
 
+  const onShare = async () => {
+    try {
+      await Share.share({
+        message: `Check out ${user.name.first} ${user.name.last} from ${user.location.city}, ${user.location.country}.  You can reach them at ${user.email}.`,
+      });
+    } catch (error) {
+      console.error(`Error sharing user:`, error);
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <Image source={{ uri: user.picture.medium }} style={styles.avatar} />
+      <Image source={{ uri: user.picture.large }} style={styles.avatar} />
       <Text style={styles.name}>
         {user.name.title} {user.name.first} {user.name.last}
       </Text>
@@ -24,6 +34,10 @@ export const UserDetailScreen = ({ route }: Props) => {
         🎂 {dobFormatted} (Age: {user.dob.age})
       </Text>
       <Text style={styles.detail}>✉️ {user.email}</Text>
+
+      <View style={{ marginTop: 20 }}>
+        <Button title="Share User Info" onPress={onShare} />
+      </View>
     </View>
   );
 };
@@ -32,7 +46,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    paddingTop: 100,
+    paddingTop: 80,
     paddingHorizontal: 20,
   },
   avatar: { width: 120, height: 120, borderRadius: 60, marginBottom: 20 },
