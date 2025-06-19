@@ -27,6 +27,7 @@ import {
   registerForPushNotificaitons,
 } from '../utilities/notifications';
 import * as Notifications from 'expo-notifications';
+import { UserCard } from '../components/UserCard';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -51,6 +52,7 @@ export const UserListScreen = ({ navigation }: Props) => {
     'all'
   );
   const [sortBy, setSortBy] = useState<'name' | 'country'>('name');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
 
   useEffect(() => {
     const loadData = async () => {
@@ -172,33 +174,49 @@ export const UserListScreen = ({ navigation }: Props) => {
         />
       </View>
 
+      <Button
+        title={`Switch to ${viewMode === 'grid' ? 'List' : 'Grid'} View`}
+        onPress={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+      />
+
       <FlatList
+        key={viewMode} // Forces re-render when numColumns changes
         data={filtered}
         keyExtractor={(item) => item.email}
-        refreshing={refreshing}
-        onRefresh={onReresh}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            onPress={() => navigation.navigate('UserDetail', { user: item })}
-          >
-            <View style={styles.userCard}>
-              <Image
-                source={{ uri: item.picture.medium }}
-                style={styles.avatar}
-              />
-              <View style={styles.userInfo}>
-                <Text>
-                  {item.name.first} {item.name.last}
-                </Text>
-                <Text style={styles.email}>{item.email}</Text>
+        numColumns={viewMode === 'grid' ? 2 : 1}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        columnWrapperStyle={
+          viewMode === 'grid' ? { justifyContent: 'space-between' } : undefined
+        }
+        renderItem={({ item }) =>
+          viewMode === 'grid' ? (
+            <UserCard
+              user={item}
+              onPress={() => navigation.navigate('UserDetail', { user: item })}
+            />
+          ) : (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('UserDetail', { user: item })}
+            >
+              <View style={styles.userCard}>
+                <Image
+                  source={{ uri: item.picture.medium }}
+                  style={styles.avatar}
+                />
+                <View style={styles.userInfo}>
+                  <Text>
+                    {item.name.first} {item.name.last}
+                  </Text>
+                  <Text style={styles.email}>{item.email}</Text>
+                </View>
+                <AnimatedHeart
+                  isFavorite={isFavorite(item.email)}
+                  onToggle={() => toggleFavorite(item.email)}
+                />
               </View>
-              <AnimatedHeart
-                isFavorite={isFavorite(item.email)}
-                onToggle={() => toggleFavorite(item.email)}
-              />
-            </View>
-          </TouchableOpacity>
-        )}
+            </TouchableOpacity>
+          )
+        }
       />
     </View>
   );
