@@ -22,6 +22,21 @@ import {
 } from '../utilities/storage';
 import { AntDesign } from '@expo/vector-icons';
 import { AnimatedHeart } from '../components/AnimatedHeart';
+import {
+  scheduleLocalNotificaiton,
+  registerForPushNotificaitons,
+} from '../utilities/notifications';
+import * as Notifications from 'expo-notifications';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
 
 type Props = NativeStackScreenProps<RootStackParamList, 'UserList'>;
 
@@ -62,6 +77,7 @@ export const UserListScreen = ({ navigation }: Props) => {
     };
 
     loadData();
+    registerForPushNotificaitons();
   }, []);
 
   const onReresh = async () => {
@@ -147,6 +163,13 @@ export const UserListScreen = ({ navigation }: Props) => {
           <Button title="Name" onPress={() => setSortBy('name')} />
           <Button title="Country" onPress={() => setSortBy('country')} />
         </View>
+      </View>
+
+      <View style={{ marginBottom: 12 }}>
+        <Button
+          title="🔔 Remind Me in 10s"
+          onPress={scheduleLocalNotificaiton}
+        />
       </View>
 
       <FlatList
