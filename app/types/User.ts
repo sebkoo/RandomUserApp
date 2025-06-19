@@ -1,4 +1,5 @@
 export type User = {
+  gender: 'male' | 'female';
   name: {
     title: string;
     first: string;

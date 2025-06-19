@@ -21,6 +21,7 @@ import {
   saveFavorites,
 } from '../utilities/storage';
 import { AntDesign } from '@expo/vector-icons';
+import { AnimatedHeart } from '../components/AnimatedHeart';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'UserList'>;
 
@@ -168,13 +169,10 @@ export const UserListScreen = ({ navigation }: Props) => {
                 </Text>
                 <Text style={styles.email}>{item.email}</Text>
               </View>
-              <TouchableOpacity onPress={() => toggleFavorite(item.email)}>
-                <AntDesign
-                  name={isFavorite(item.email) ? 'heart' : 'hearto'}
-                  size={24}
-                  color={isFavorite(item.email) ? 'red' : 'gray'}
-                />
-              </TouchableOpacity>
+              <AnimatedHeart
+                isFavorite={isFavorite(item.email)}
+                onToggle={() => toggleFavorite(item.email)}
+              />
             </View>
           </TouchableOpacity>
         )}
