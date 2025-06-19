@@ -8,13 +8,14 @@ import {
   StyleSheet,
 } from 'react-native';
 import { User } from '../types/User';
-import { loadUsers, loadFavorites } from '../utilities/storage';
+import { loadUsers, loadFavorites, saveFavorites } from '../utilities/storage';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { AntDesign } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import * as DocumentPicker from 'expo-document-picker';
 
 export const FavoritesScreen = () => {
   const [favorites, setFavorites] = useState<User[]>([]);
@@ -31,6 +32,30 @@ export const FavoritesScreen = () => {
       await Sharing.shareAsync(fileUri);
     } catch (e) {
       console.error('Export failed:', e);
+    }
+  };
+
+  const importFavorites = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: `application/json`,
+      });
+      if (result.canceled || !result.assets?.[0]) return;
+
+      const fileUri = result.assets[0].uri;
+      const content = await FileSystem.readAsStringAsync(fileUri);
+      const importedUsers: User[] = JSON.parse(content);
+
+      const importedEmails = importedUsers.map((u) => u.email);
+
+      // Save only email references
+      await saveFavorites(importedEmails);
+      setFavorites(importedUsers);
+
+      alert(`✅ Imported ${importedUsers.length} favorites!`);
+    } catch (e) {
+      console.error('Import failed:', e);
+      alert('⚠️ Failed to import favorites');
     }
   };
 
@@ -55,9 +80,20 @@ export const FavoritesScreen = () => {
     <View style={styels.container}>
       <View style={styels.header}>
         <Text style={styels.title}>❤️ Favorites</Text>
-        <TouchableOpacity onPress={exportFavorites} style={styels.exportButton}>
-          <Text style={styels.exportText}>Export</Text>
-        </TouchableOpacity>
+        <View style={styels.buttonRow}>
+          <TouchableOpacity
+            onPress={exportFavorites}
+            style={styels.exportButton}
+          >
+            <Text style={styels.exportText}>Export</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={importFavorites}
+            style={styels.importButton}
+          >
+            <Text style={styels.exportText}>Import</Text>
+          </TouchableOpacity>
+        </View>
       </View>
       <FlatList
         data={favorites}
@@ -114,5 +150,12 @@ const styels = StyleSheet.create({
   exportText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  buttonRow: { flexDirection: 'row', gap: 8 },
+  importButton: {
+    backgroundColor: '#2a5',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
   },
 });
