@@ -56,6 +56,9 @@ export const UserListScreen = ({ navigation }: Props) => {
   const [minAge, setMinAge] = useState(0);
   const [maxAge, setMaxAge] = useState(99);
   const [country, setCountry] = useState('');
+  const [city, setCity] = useState('');
+  const [nationality, setNationality] = useState('');
+  const [registeredYear, setRegisteredYear] = useState('');
 
   useEffect(() => {
     const loadData = async () => {
@@ -127,6 +130,22 @@ export const UserListScreen = ({ navigation }: Props) => {
     filteredData = filteredData.filter((user) =>
       `${user.name.first} ${user.name.last}`.toLowerCase().includes(query)
     );
+
+    // Filter by city
+    if (city.trim()) {
+      const cityLower = city.toLowerCase();
+      filteredData = filteredData.filter((user) =>
+        user.location.city.toLowerCase().includes(cityLower)
+      );
+    }
+
+    // Filter by registration year
+    if (registeredYear.trim()) {
+      filteredData = filteredData.filter((user) => {
+        const year = new Date(user.registered.date).getFullYear().toString();
+        return year === registeredYear.trim();
+      });
+    }
 
     // Sort
     if (sortBy === 'name') {
@@ -207,6 +226,27 @@ export const UserListScreen = ({ navigation }: Props) => {
             value={country}
             onChangeText={setCountry}
             placeholder="e.g. United States"
+          />
+        </View>
+
+        <View style={styles.filterGroup}>
+          <Text style={styles.label}>City:</Text>
+          <TextInput
+            style={styles.input}
+            value={city}
+            onChangeText={setCity}
+            placeholder="e.g. London"
+          />
+        </View>
+
+        <View style={styles.filterGroup}>
+          <Text style={styles.label}>Registered Year:</Text>
+          <TextInput
+            style={styles.inputSmall}
+            keyboardType="numeric"
+            value={registeredYear}
+            onChangeText={setRegisteredYear}
+            placeholder="e.g. 2018"
           />
         </View>
       </View>

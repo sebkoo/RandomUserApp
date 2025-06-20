@@ -20,4 +20,8 @@ export type User = {
     medium: string;
     large: string;
   };
+  registered: {
+    date: string;
+    age: number;
+  };
 };
