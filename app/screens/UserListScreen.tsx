@@ -53,6 +53,9 @@ export const UserListScreen = ({ navigation }: Props) => {
   );
   const [sortBy, setSortBy] = useState<'name' | 'country'>('name');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
+  const [minAge, setMinAge] = useState(0);
+  const [maxAge, setMaxAge] = useState(99);
+  const [country, setCountry] = useState('');
 
   useEffect(() => {
     const loadData = async () => {
@@ -106,7 +109,20 @@ export const UserListScreen = ({ navigation }: Props) => {
       );
     }
 
-    // Filter by search
+    // Filter by age
+    filteredData = filteredData.filter(
+      (user) => user.dob.age >= minAge && user.dob.age <= maxAge
+    );
+
+    // Filter by country
+    if (country.trim()) {
+      const countryLower = country.toLowerCase();
+      filteredData = filteredData.filter((user) =>
+        user.location.country.toLowerCase().includes(countryLower)
+      );
+    }
+
+    // Filter by name search
     const query = search.toLowerCase();
     filteredData = filteredData.filter((user) =>
       `${user.name.first} ${user.name.last}`.toLowerCase().includes(query)
@@ -126,7 +142,7 @@ export const UserListScreen = ({ navigation }: Props) => {
     }
 
     setFiltered(filteredData);
-  }, [search, users, genderFilter, sortBy]);
+  }, [search, users, genderFilter, sortBy, minAge, maxAge, country]);
 
   const toggleFavorite = async (email: string) => {
     const updated = favoriteEmails.includes(email)
@@ -164,6 +180,34 @@ export const UserListScreen = ({ navigation }: Props) => {
           <Text style={styles.label}>Sort by:</Text>
           <Button title="Name" onPress={() => setSortBy('name')} />
           <Button title="Country" onPress={() => setSortBy('country')} />
+        </View>
+
+        <View style={styles.filterGroup}>
+          <Text style={styles.label}>Age Range:</Text>
+          <TextInput
+            style={styles.inputSmall}
+            keyboardType="numeric"
+            value={String(minAge)}
+            onChangeText={(val) => setMinAge(Number(val))}
+            placeholder="Min"
+          />
+          <TextInput
+            style={styles.inputSmall}
+            keyboardType="numeric"
+            value={String(maxAge)}
+            onChangeText={(val) => setMaxAge(Number(val))}
+            placeholder="Max"
+          />
+        </View>
+
+        <View style={styles.filterGroup}>
+          <Text style={styles.label}>Country:</Text>
+          <TextInput
+            style={styles.input}
+            value={country}
+            onChangeText={setCountry}
+            placeholder="e.g. United States"
+          />
         </View>
       </View>
 
@@ -250,4 +294,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   label: { fontWeight: 'bold', marginRight: 6 },
+  inputSmall: {
+    width: 60,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 6,
+    borderRadius: 6,
+    marginRight: 8,
+  },
 });
